@@ -1,46 +1,42 @@
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 type HoldButtonProps = {
   onHold: () => void;
   disabled?: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 const HoldButton = ({ onHold, disabled, children }: HoldButtonProps) => {
-  const [isHolding, setIsHolding] = useState(false);
+  const [isPRessing, setisPRessing] = useState(false);
   const [isInitialPress, setIsInitialPress] = useState(true);
 
   useEffect(() => {
     let initialTimeout: ReturnType<typeof setTimeout>;
     let holdInterval: ReturnType<typeof setTimeout>;
 
-    if (isHolding && !disabled) {
-      initialTimeout = setTimeout(
-        () => {
-          onHold();
-          holdInterval = setInterval(onHold, 100);
-        },
-        isInitialPress ? 500 : 0
-      );
-      setIsInitialPress(false);
+    if (isPRessing && !disabled) {
+      initialTimeout = setTimeout(() => {
+        setIsInitialPress(false);
+        onHold();
+        holdInterval = setInterval(onHold, 100);
+      }, 500);
     }
 
     return () => {
-      if (isInitialPress && isHolding && !disabled) {
-        onHold();
-      }
+      if (isInitialPress && isPRessing && !disabled) onHold();
+
       clearTimeout(initialTimeout);
       clearTimeout(holdInterval);
     };
-  }, [isHolding, isInitialPress, onHold, disabled]);
+  }, [isPRessing, isInitialPress, onHold, disabled]);
 
   const handleMouseDown = () => {
-    setIsHolding(true);
+    setisPRessing(true);
     setIsInitialPress(true);
   };
 
   const handleMouseUp = () => {
-    setIsHolding(false);
+    setisPRessing(false);
   };
 
   return (
