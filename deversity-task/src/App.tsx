@@ -14,10 +14,19 @@ function App() {
     setBoxes([...boxes, { id: Math.random(), count: 0 }]);
   };
 
-  const handleSetCount = (id: number, newCount: number) => {
+  const handleSetCount = (
+    id: number,
+    newCount: number | ((prevCount: number) => number)
+  ) => {
     setBoxes((prevBoxes) =>
       prevBoxes.map((box) =>
-        box.id === id ? { ...box, count: newCount } : box
+        box.id === id
+          ? {
+              ...box,
+              count:
+                typeof newCount === "function" ? newCount(box.count) : newCount,
+            }
+          : box
       )
     );
   };

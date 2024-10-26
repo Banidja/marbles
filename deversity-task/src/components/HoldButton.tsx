@@ -1,43 +1,39 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 
-type HoldButtonProps = {
+type Props = {
   onHold: () => void;
   disabled?: boolean;
   children: ReactNode;
 };
 
-const HoldButton = ({ onHold, disabled, children }: HoldButtonProps) => {
-  const [isPRessing, setisPRessing] = useState(false);
-  const [isInitialPress, setIsInitialPress] = useState(true);
-
-  useEffect(() => {
-    let initialTimeout: ReturnType<typeof setTimeout>;
-    let holdInterval: ReturnType<typeof setTimeout>;
-
-    if (isPRessing && !disabled) {
-      initialTimeout = setTimeout(() => {
-        setIsInitialPress(false);
-        onHold();
-        holdInterval = setInterval(onHold, 100);
-      }, 500);
-    }
-
-    return () => {
-      if (isInitialPress && isPRessing && !disabled) onHold();
-
-      clearTimeout(initialTimeout);
-      clearTimeout(holdInterval);
-    };
-  }, [isPRessing, isInitialPress, onHold, disabled]);
+const HoldButton = ({ onHold, disabled, children }: Props) => {
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handleMouseDown = () => {
-    setisPRessing(true);
-    setIsInitialPress(true);
+    if (disabled) return;
+
+    timeoutRef.current = setTimeout(() => {
+      intervalRef.current = setInterval(onHold, 100);
+    }, 500);
   };
 
   const handleMouseUp = () => {
-    setisPRessing(false);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
   };
+
+  useEffect(() => {
+    return () => {
+      handleMouseUp();
+    };
+  }, []);
 
   return (
     <button
@@ -45,6 +41,7 @@ const HoldButton = ({ onHold, disabled, children }: HoldButtonProps) => {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       disabled={disabled}
+      onClick={onHold}
     >
       {children}
     </button>

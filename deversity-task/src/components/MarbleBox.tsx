@@ -3,17 +3,17 @@ import HoldButton from "./HoldButton";
 
 type Props = {
   count: number;
-  setCount: (count: number) => void;
+  setCount: (count: number | ((prevCount: number) => number)) => void;
   removeBox: () => void;
 };
 
 const MarbleBox = ({ count, setCount, removeBox }: Props) => {
   const handleIncrement = () => {
-    setCount(count + 1);
+    setCount((prevCount) => prevCount + 1);
   };
 
   const handleDecrement = () => {
-    if (count > 0) setCount(count - 1);
+    setCount((prevCount) => Math.max(prevCount - 1, 0));
   };
 
   return (
